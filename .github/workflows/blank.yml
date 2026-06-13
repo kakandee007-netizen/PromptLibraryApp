@@ -1,36 +1,66 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Build unsigned IPA
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: macos-14
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Arrange sources for XcodeGen
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          mkdir -p Sources Resources
+          # Move root-level Swift files into Sources/ (if not already there)
+          for f in *.swift; do
+            [ -f "$f" ] && mv "$f" Sources/ || true
+          done
+          # Move the web asset into Resources/ (if at repo root)
+          [ -f index.html ] && mv index.html Resources/ || true
+          echo "---- layout ----"
+          ls -R Sources Resources
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build app (no code signing)
+        run: |
+          xcodebuild \
+            -project PromptLibrary.xcodeproj \
+            -scheme PromptLibrary \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO
+
+      - name: Package into .ipa
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/PromptLibrary.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "App not found at $APP_PATH"; exit 1
+          fi
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -qr PromptLibrary.ipa Payload
+          rm -rf Payload
+          ls -la PromptLibrary.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PromptLibrary-ipa
+          path: PromptLibrary.ipa
+          if-no-files-found: error
