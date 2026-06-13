@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<title>คลังพรอมป์</title>
+<style>
+  :root{
+    --bg:#E8EAEE; --surface:#FFFFFF; --ink:#1B1F2A; --muted:#6E7787;
+    --line:#DBDFE7; --ember:#DD513A; --ember-deep:#B83C29; --ok:#1F9D63;
+    --shadow:0 1px 2px rgba(27,31,42,.04),0 8px 24px rgba(27,31,42,.06); --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink); line-height:1.5; -webkit-font-smoothing:antialiased;
+    font-family:-apple-system,"SF Pro Text",system-ui,"Helvetica Neue",sans-serif;
+    padding:calc(26px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+            calc(80px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
+  }
+  .wrap{max-width:1040px;margin:0 auto}
+  .eyebrow{font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:var(--ember);margin-bottom:6px}
+  h1{font-weight:800;font-size:32px;letter-spacing:-.02em;line-height:1.1}
+  .sub{color:var(--muted);font-size:14px;margin-top:6px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 16px}
+  .search{flex:1;min-width:200px;position:relative}
+  .search input{width:100%;padding:12px 14px 12px 40px;border:1px solid var(--line);border-radius:11px;background:var(--surface);font:inherit;color:var(--ink);box-shadow:var(--shadow)}
+  .search input:focus{outline:2px solid var(--ember);outline-offset:1px;border-color:transparent}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .btn{font:inherit;font-weight:600;cursor:pointer;border:none;border-radius:11px;padding:12px 18px;display:inline-flex;align-items:center;gap:7px;transition:transform .12s ease,background .15s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--ember);color:#fff;box-shadow:0 4px 12px rgba(221,81,58,.28)}
+  .btn-primary:hover{background:var(--ember-deep)}
+  .btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .chip{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--muted);padding:6px 13px;border-radius:999px;transition:all .14s ease}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:24px;display:none}
+  .panel.open{display:block;animation:slideIn .2s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .panel h2{font-size:18px;font-weight:700;margin-bottom:14px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+  .field input,.field textarea{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font:inherit;color:var(--ink);background:#FCFCFD;resize:vertical}
+  .field textarea{min-height:120px;line-height:1.55}
+  .field input:focus,.field textarea:focus{outline:2px solid var(--ember);outline-offset:1px;border-color:transparent;background:#fff}
+  .panel-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 18px 14px 22px;position:relative;display:flex;flex-direction:column;transition:transform .14s ease,box-shadow .14s ease;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--bar,var(--ember))}
+  .card-tag{align-self:flex-start;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:999px;margin-bottom:10px;background:var(--tagbg,#EEF0F4);color:var(--tagfg,#555)}
+  .card-title{font-weight:700;font-size:17px;margin-bottom:8px;word-break:break-word}
+  .card-body{color:var(--muted);font-size:13.5px;line-height:1.55;white-space:pre-wrap;flex:1;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+  .card-actions{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:12px}
+  .copy-btn{flex:1;font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;border:none;background:var(--ink);color:#fff;border-radius:9px;padding:9px;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background .15s ease}
+  .copy-btn.copied{background:var(--ok)}
+  .icon-btn{font:inherit;font-weight:600;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:9px;min-width:38px;height:38px;display:grid;place-items:center;padding:0 8px;transition:all .14s ease}
+  .icon-btn.danger.confirm{color:#fff;background:var(--ember);border-color:var(--ember)}
+  .state{text-align:center;padding:60px 20px;color:var(--muted);border:1.5px dashed var(--line);border-radius:var(--radius);background:rgba(255,255,255,.4)}
+  .state strong{display:block;color:var(--ink);font-size:18px;font-weight:700;margin-bottom:6px}
+  .note{font-size:12px;color:var(--muted);margin-top:16px;text-align:center}
+  @media (max-width:480px){h1{font-size:27px}.grid{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">คลังส่วนตัว</div>
+    <h1>คลังพรอมป์</h1>
+    <p class="sub" id="subtitle">เก็บพรอมป์ที่ใช้บ่อย กดก็อปไปใช้ได้ในคลิกเดียว</p>
+  </header>
+  <div class="toolbar">
+    <div class="search">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="ค้นหาพรอมป์..." />
+    </div>
+    <button class="btn btn-primary" id="addBtn">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      เพิ่มพรอมป์
+    </button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="panel" id="panel">
+    <h2 id="panelTitle">เพิ่มพรอมป์ใหม่</h2>
+    <div class="field"><label for="fTitle">ชื่อพรอมป์</label><input id="fTitle" type="text" placeholder="เช่น สรุปบทความให้สั้น" /></div>
+    <div class="field"><label for="fCat">หมวดหมู่ (ไม่บังคับ)</label><input id="fCat" type="text" list="catList" placeholder="เช่น งานเขียน, โค้ด, อีเมล" /><datalist id="catList"></datalist></div>
+    <div class="field"><label for="fBody">เนื้อหาพรอมป์</label><textarea id="fBody" placeholder="วางข้อความพรอมป์ที่นี่..."></textarea></div>
+    <div class="panel-actions"><button class="btn btn-ghost" id="cancelBtn">ยกเลิก</button><button class="btn btn-primary" id="saveBtn">บันทึก</button></div>
+  </div>
+  <div id="content"></div>
+  <p class="note">ข้อมูลถูกบันทึกไว้ในเครื่องนี้ · ใช้งานออฟไลน์ได้</p>
+</div>
+<script>
+const KEY="prompt-library-v1";
+const TAG_PALETTE=[["#FBEAE6","#B83C29"],["#E7F0FE","#2563A8"],["#E8F6EC","#1F7A4B"],["#F3EBFB","#7A3FB0"],["#FEF3E2","#B5710E"],["#EAF4F4","#27827E"],["#FCE9F1","#B33067"],["#EEF0F4","#555E6E"]];
+let prompts=[], activeCat="ทั้งหมด", query="", editingId=null, pendingDelete=null, delTimer=null;
+const $=(id)=>document.getElementById(id);
+
+/* ---- storage: native bridge (iOS app) or localStorage fallback ---- */
+function readStore(){
+  try{
+    if(typeof window.__INITIAL_PROMPTS__!=="undefined") return JSON.parse(window.__INITIAL_PROMPTS__||"[]");
+    return JSON.parse(localStorage.getItem(KEY)||"[]");
+  }catch(e){ return []; }
+}
+function writeStore(){
+  const json=JSON.stringify(prompts);
+  if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.store){
+    try{ window.webkit.messageHandlers.store.postMessage(json); }catch(e){}
+  }else{
+    try{ localStorage.setItem(KEY,json); }catch(e){}
+  }
+}
+
+function tagColor(cat){if(!cat)return TAG_PALETTE[7];let h=0;for(let i=0;i<cat.length;i++)h=(h*31+cat.charCodeAt(i))>>>0;return TAG_PALETTE[h%(TAG_PALETTE.length-1)];}
+function categories(){const s=new Set(prompts.map(p=>p.category).filter(Boolean));return["ทั้งหมด",...Array.from(s)];}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function render(){
+  $("subtitle").textContent=prompts.length?`เก็บไว้แล้ว ${prompts.length} พรอมป์ · กดก็อปไปใช้ได้ในคลิกเดียว`:"เก็บพรอมป์ที่ใช้บ่อย กดก็อปไปใช้ได้ในคลิกเดียว";
+  const cats=categories();
+  const chipBox=$("chips"); chipBox.style.display=cats.length>1?"flex":"none";
+  chipBox.innerHTML=cats.map(c=>`<button class="chip ${c===activeCat?'active':''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
+  $("catList").innerHTML=Array.from(new Set(prompts.map(p=>p.category).filter(Boolean))).map(c=>`<option value="${escapeHtml(c)}">`).join("");
+  let list=prompts.slice().sort((a,b)=>b.createdAt-a.createdAt);
+  if(activeCat!=="ทั้งหมด")list=list.filter(p=>p.category===activeCat);
+  if(query){const q=query.toLowerCase();list=list.filter(p=>(p.title+" "+p.body+" "+(p.category||"")).toLowerCase().includes(q));}
+  const content=$("content");
+  if(prompts.length===0){content.innerHTML=`<div class="state"><strong>ยังไม่มีพรอมป์</strong>กด “เพิ่มพรอมป์” ด้านบนเพื่อเก็บอันแรกของคุณ</div>`;return;}
+  if(list.length===0){content.innerHTML=`<div class="state"><strong>ไม่พบพรอมป์ที่ตรงกัน</strong>ลองคำค้นอื่น หรือเลือกหมวดหมู่ “ทั้งหมด”</div>`;return;}
+  content.innerHTML=`<div class="grid">${list.map(cardHtml).join("")}</div>`;
+}
+function cardHtml(p){
+  const [bg,fg]=tagColor(p.category);
+  const tag=p.category?`<span class="card-tag" style="--tagbg:${bg};--tagfg:${fg}">${escapeHtml(p.category)}</span>`:"";
+  const delBtn=pendingDelete===p.id
+    ?`<button class="icon-btn danger confirm" data-del="${p.id}" title="ยืนยันลบ">ลบ?</button>`
+    :`<button class="icon-btn danger" data-del="${p.id}" title="ลบ"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>`;
+  return `<article class="card" style="--bar:${fg}">${tag}
+    <div class="card-title">${escapeHtml(p.title)}</div>
+    <div class="card-body">${escapeHtml(p.body)}</div>
+    <div class="card-actions">
+      <button class="copy-btn" data-copy="${p.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>คัดลอก</button>
+      <button class="icon-btn" data-edit="${p.id}" title="แก้ไข"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      ${delBtn}
+    </div></article>`;
+}
+function openPanel(p){editingId=p?p.id:null;$("panelTitle").textContent=p?"แก้ไขพรอมป์":"เพิ่มพรอมป์ใหม่";$("fTitle").value=p?p.title:"";$("fCat").value=p?(p.category||""):"";$("fBody").value=p?p.body:"";$("panel").classList.add("open");$("fTitle").focus();$("panel").scrollIntoView({behavior:"smooth",block:"center"});}
+function closePanel(){$("panel").classList.remove("open");editingId=null;}
+function save(){
+  const title=$("fTitle").value.trim(),body=$("fBody").value.trim(),category=$("fCat").value.trim();
+  if(!title&&!body){$("fTitle").focus();return;}
+  if(editingId){const p=prompts.find(x=>x.id===editingId);if(p){p.title=title||"(ไม่มีชื่อ)";p.body=body;p.category=category;}}
+  else{prompts.push({id:"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,6),title:title||"(ไม่มีชื่อ)",body,category,createdAt:Date.now()});}
+  closePanel();render();writeStore();
+}
+function requestDel(id){
+  if(pendingDelete===id){pendingDelete=null;clearTimeout(delTimer);prompts=prompts.filter(x=>x.id!==id);render();writeStore();return;}
+  pendingDelete=id;render();clearTimeout(delTimer);delTimer=setTimeout(()=>{pendingDelete=null;render();},3000);
+}
+function copy(id,btn){
+  const p=prompts.find(x=>x.id===id);if(!p)return;
+  const text=p.body;
+  const done=()=>{const o=btn.innerHTML;btn.classList.add("copied");btn.innerHTML=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>คัดลอกแล้ว`;setTimeout(()=>{btn.classList.remove("copied");btn.innerHTML=o;},1500);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>{fallbackCopy(text);done();});}
+  else{fallbackCopy(text);done();}
+}
+function fallbackCopy(text){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta);}
+
+$("addBtn").addEventListener("click",()=>($("panel").classList.contains("open")&&!editingId)?closePanel():openPanel(null));
+$("cancelBtn").addEventListener("click",closePanel);
+$("saveBtn").addEventListener("click",save);
+$("search").addEventListener("input",e=>{query=e.target.value;render();});
+$("chips").addEventListener("click",e=>{const c=e.target.closest("[data-cat]");if(!c)return;activeCat=c.dataset.cat;render();});
+$("content").addEventListener("click",e=>{const cp=e.target.closest("[data-copy]"),ed=e.target.closest("[data-edit]"),dl=e.target.closest("[data-del]");if(cp)copy(cp.dataset.copy,cp);else if(ed)openPanel(prompts.find(x=>x.id===ed.dataset.edit));else if(dl)requestDel(dl.dataset.del);});
+$("fBody").addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter")save();});
+
+prompts=readStore();
+render();
+</script>
+</body>
+</html>
